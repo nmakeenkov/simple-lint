@@ -1,0 +1,74 @@
+RuleSet:
+    rules*=Rule
+;
+
+Rule:
+    'Rule' message=STRING ':'
+        language_parts*=LanguagePartRule
+    ';'
+;
+
+LanguagePartRule:
+     part=LanguagePart ':'
+        statement=Statement
+;
+
+LanguagePart:
+    "FILE"|"CLASS"
+;
+
+Statement:
+    PassStatement|IfStatement|Assert|Expression
+;
+
+IfStatement:
+    'if 'condition=Expression ':'
+        ifTrueStatement=Statement
+    'else:'
+        ifFalseStatement=Statement
+    ';'
+;
+
+PassStatement:
+    xx='pass'
+;
+
+Expression:
+    FunctionExpression|CompareExpression|'('Expression')'|VariableWithProperty|IntConstant|StringConstant
+;
+
+FunctionExpression:
+    function=Function'('operand1=Expression(','operands=Expression)*')'
+;
+
+Function:
+    "LIKE"|"AND"|"OR"
+;
+
+CompareExpression:
+    '('lhs=Expression operator=CompareOperator rhs=Expression')'
+;
+
+CompareOperator:
+    "<"|">"|"="|"!="|"<="|">="
+;
+
+IntConstant:
+    value=INT
+;
+
+StringConstant:
+    value=STRING
+;
+
+VariableWithProperty:
+    variable=ID('.'properties=ID)*
+;
+
+Assert:
+    'assert' expression=Expression
+;
+
+Comment:
+  /\/\/.*$/
+;

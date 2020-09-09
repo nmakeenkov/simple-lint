@@ -1,0 +1,15 @@
+Rule "no op":
+    FILE:
+        pass
+;
+
+Rule "Length limit":
+    FILE:
+        if LIKE(file.name, "^__.*__.py$"):  // e.g. __init__.py
+            assert(file.lines < 10)
+        else:
+            assert(file.lines < 1000)
+        ;
+    CLASS:
+        assert(class.lines < 300)
+;
