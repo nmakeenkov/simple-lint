@@ -4,6 +4,8 @@ from enum import Enum
 class LanguagePart(Enum):
     FILE = 1
     CLASS = 2
+    FUNCTION = 3
+    NAME = 4
 
     @classmethod
     def get_by_string(cls, string: str):
@@ -15,8 +17,10 @@ class LanguagePart(Enum):
 
 class Function(Enum):
     LIKE = 1
-    AND = 2
-    OR = 3
+    SUB = 2
+    LOWER = 3
+    AND = 4
+    OR = 5
 
     @classmethod
     def get_by_string(cls, string: str):

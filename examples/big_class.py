@@ -1,3 +1,5 @@
+
+
 class TooBigClass(object):
     def a1(self):
         pass
@@ -220,84 +222,86 @@ class TooBigClass(object):
 
     def a74(self):
         pass
+    
+    def big_function(self):
 
-    def a75(self):
-        pass
-
-    def a76(self):
-        pass
-
-    def a77(self):
-        pass
-
-    def a78(self):
-        pass
-
-    def a79(self):
-        pass
-
-    def a80(self):
-        pass
-
-    def a81(self):
-        pass
-
-    def a82(self):
-        pass
-
-    def a83(self):
-        pass
-
-    def a84(self):
-        pass
-
-    def a85(self):
-        pass
-
-    def a86(self):
-        pass
-
-    def a87(self):
-        pass
-
-    def a88(self):
-        pass
-
-    def a89(self):
-        pass
-
-    def a90(self):
-        pass
-
-    def a91(self):
-        pass
-
-    def a92(self):
-        pass
-
-    def a93(self):
-        pass
-
-    def a94(self):
-        pass
-
-    def a95(self):
-        pass
-
-    def a96(self):
-        pass
-
-    def a97(self):
-        pass
-
-    def a98(self):
-        pass
-
-    def a99(self):
-        pass
-
-    def a100(self):
-        pass
-
-    def a101(self):
-        pass
+        def a75():
+            pass
+    
+        def a76():
+            pass
+    
+        def a77():
+            pass
+    
+        def a78():
+            pass
+    
+        def a79():
+            pass
+    
+        def a80():
+            pass
+    
+        def a81():
+            pass
+    
+        def a82():
+            pass
+    
+        def a83():
+            pass
+    
+        def a84():
+            pass
+    
+        def a85():
+            pass
+    
+        def a86():
+            pass
+    
+        def a87():
+            pass
+    
+        def a88():
+            pass
+    
+        def a89():
+            pass
+    
+        def a90():
+            pass
+    
+        def a91():
+            pass
+    
+        def a92():
+            pass
+    
+        def a93():
+            pass
+    
+        def a94():
+            pass
+    
+        def a95():
+            pass
+    
+        def a96():
+            pass
+    
+        def a97():
+            pass
+    
+        def a98():
+            pass
+    
+        def a99():
+            pass
+    
+        def a100():
+            pass
+    
+        def a101():
+            pass

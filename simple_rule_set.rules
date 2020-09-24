@@ -12,4 +12,26 @@ Rule "Length limit":
         ;
     CLASS:
         assert(class.lines < 300)
+    FUNCTION:
+        assert(function.lines < 60)
+;
+
+Rule "Names":
+    FILE:
+        assert(LIKE(file.name, "^[a-z0-9_]*.py$"))  // snake_case
+    FUNCTION:
+        assert(LIKE(function.name, "^[a-z0-9_]*$"))  // snake_case
+    NAME:
+        assert(LIKE(name.identifier, "^[a-z0-9_]*$"))  // snake_case
+    CLASS:
+        assert(LIKE(class.name, "^([A-Z][a-z0-9]+)+$"))  // CamelCase
+;
+
+Rule "File called by single class name":
+    FILE:
+        if file.is_single_class:
+            assert(LOWER(SUB("(?!^)([A-Z]+)", "_\1", file.single_class.name)) = SUB(".py$", "", file.name))
+        else:
+            pass
+        ;
 ;

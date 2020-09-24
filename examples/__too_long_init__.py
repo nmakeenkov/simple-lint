@@ -1,6 +1,8 @@
 class Foo(object):
-    def a(self):
-        pass
+
+    def a(self, arg):
+        badVariableName = 1
+        return badVariableName + arg
 
     def b(self):
         pass

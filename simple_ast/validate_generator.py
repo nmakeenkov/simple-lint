@@ -4,16 +4,28 @@ from simple_ast.model import CompareOperator, Function
 from simple_ast.visitor import AbstractVisitor, LanguagePart
 
 
+class ErrorInfo(object):
+    def __init__(self, description: str, file_name: str, line_number: int):
+        self.description = description
+        self.file_name = file_name
+        self.line_number = line_number
+
+    def __str__(self):
+        return self.description + ' @ ' + self.file_name + ':' + str(self.line_number)
+
+    def __repr__(self):
+        return str(self)
+
+
 class ErrorRegistry(object):
     def __init__(self):
         self._errors = []
 
-    def save_error(self, rule_name, metainf):
-        self._errors.append((rule_name, metainf,))
+    def save_error(self, rule_name: str, error_info: ErrorInfo):
+        self._errors.append((rule_name, error_info,))
 
-    # TODO: sort by line number
     def get_error_message(self):
-        return sorted(self._errors, key=lambda rule: rule[0])
+        return sorted(self._errors, key=lambda rule: (rule[1].line_number, rule[0], rule[1].description))
 
 
 class Variable(object):
@@ -36,7 +48,7 @@ class Scope(object):
 
     def get_value(self, variable_name: str, properties: list):
         if variable_name not in self._variables:
-            raise Exception("Variable " + variable_name + "not found in current scope")
+            raise Exception("Variable " + variable_name + " not found in current scope")
         variable = self._variables[variable_name]
         for prop in properties:
             if prop not in variable:
@@ -71,13 +83,16 @@ class Validate(object):
                 self.register_rule(language_part, rule)
 
     def validate_rule(self, language_part: LanguagePart, scope: Scope, error_registry: ErrorRegistry):
-        rules = self._rules[language_part]
-        if rules is None:
+        if language_part not in self._rules:
             return
+        rules = self._rules[language_part]
         for rule in rules:
             error = rule.rule(scope)
             if error is not None:
-                error_registry.save_error(rule.name, error)
+                error_registry.save_error(rule.name, ErrorInfo(
+                    scope.get_value('_meta_inf', ['_description']),
+                    scope.get_value('_meta_inf', ['_file_name']),
+                    scope.get_value('_meta_inf', ['_line_number'])))
 
 
 class IfStatementFunction(object):
@@ -115,6 +130,42 @@ class LikeFunction(object):
         return pattern.search(expression[0]) is not None, None
 
 
+class SubFunction(object):
+    def __init__(self, operands):
+        if len(operands) != 3:
+            raise Exception("sub expects 3 arguments, found " + str(len(operands)))
+        self.operands = operands
+
+    def __call__(self, *args, **kwargs):
+        pattern, repl, operand = list(map(lambda operand: operand(*args, **kwargs), self.operands))
+        if pattern[1] is not None:
+            return None, pattern[1]
+        if repl[1] is not None:
+            return None, repl[1]
+        if operand[1] is not None:
+            return None, operand[1]
+        if not isinstance(pattern[0], str):
+            raise Exception('Can\'t match pattern ' + str(pattern[0]) + ", string expected")
+        if not isinstance(repl[0], str):
+            raise Exception('Can\'t replace with ' + str(repl[0]) + ", string expected")
+        if not isinstance(operand[0], str):
+            raise Exception('Can\'t match expression ' + str(operand[0]) + ", string expected")
+        return re.sub(pattern[0], repl[0], operand[0]), None
+
+
+class LowerFunction(object):
+    def __init__(self, operands):
+        if len(operands) != 1:
+            raise Exception("lower expects 1 argument, found " + str(len(operands)))
+        self.operand = operands[0]
+
+    def __call__(self, *args, **kwargs):
+        value, error = self.operand(*args, **kwargs)
+        if error is not None:
+            return None, error
+        return value.lower(), None
+
+
 class CompareFunction(object):
     def __init__(self, operator: CompareOperator, lhs: callable, rhs: callable):
         self.operator = operator
@@ -131,15 +182,15 @@ class CompareFunction(object):
         if self.operator == CompareOperator.LT:
             return lhs_result < rhs_result, None
         elif self.operator == CompareOperator.LTE:
-            return lhs_result <= rhs_result
+            return lhs_result <= rhs_result, None
         elif self.operator == CompareOperator.GT:
-            return lhs_result > rhs_result
+            return lhs_result > rhs_result, None
         elif self.operator == CompareOperator.GTE:
-            return lhs_result >- rhs_result
+            return lhs_result >= rhs_result, None
         elif self.operator == CompareOperator.EQ:
-            return lhs_result == rhs_result
+            return lhs_result == rhs_result, None
         elif self.operator == CompareOperator.NEQ:
-            return lhs_result != rhs_result
+            return lhs_result != rhs_result, None
         else:
             raise Exception('Unknown operator ' + str(self.operator))
 
@@ -197,9 +248,13 @@ class ValidateGenerator(AbstractVisitor):
         return lambda scope: (None, None)
 
     def visit_function_expression(self, function: Function, operands):
-        if Function.LIKE.name != function.name:
-            raise NotImplementedError("function " + function.name + " evaluator not implemeted")
-        return LikeFunction(list(map(self.visit, operands)))
+        if Function.LIKE.name == function.name:
+            return LikeFunction(list(map(self.visit, operands)))
+        if Function.SUB.name == function.name:
+            return SubFunction(list(map(self.visit, operands)))
+        if Function.LOWER.name == function.name:
+            return LowerFunction(list(map(self.visit, operands)))
+        raise NotImplementedError("function " + function.name + " evaluator not implemeted")
 
     def visit_compare_expression(self, operator: CompareOperator, lhs, rhs):
         return CompareFunction(operator, self.visit(lhs), self.visit(rhs))

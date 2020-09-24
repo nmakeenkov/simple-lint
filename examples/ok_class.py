@@ -294,6 +294,6 @@ class OkClass(object):
         pass
 
     def a99(self):
-        pass
-    def a100(self):
+        """Just random line to make it exactly fitting the
+        limit"""
         pass

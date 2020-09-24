@@ -14,7 +14,7 @@ def run_lint(metamodel_file_name, model_file_name, source_file_name):
 
 
 def main(metamodel_file_name, model_file_name, source_file_name):
-    print(str(run_lint(metamodel_file_name, model_file_name, source_file_name)))
+    print('\n\n'.join(map(str, run_lint(metamodel_file_name, model_file_name, source_file_name))))
 
 
 if __name__ == '__main__':

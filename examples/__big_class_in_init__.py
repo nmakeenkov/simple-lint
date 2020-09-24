@@ -1,4 +1,8 @@
 class TooBigClass(object):
+
+    class nested_class_in_snake_case(object):
+        pass
+
     def a1(self):
         pass
 

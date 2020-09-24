@@ -14,7 +14,7 @@ LanguagePartRule:
 ;
 
 LanguagePart:
-    "FILE"|"CLASS"
+    "FILE"|"CLASS"|"FUNCTION"|"NAME"
 ;
 
 Statement:
@@ -42,7 +42,7 @@ FunctionExpression:
 ;
 
 Function:
-    "LIKE"|"AND"|"OR"
+    "LIKE"|"SUB"|"LOWER"|"AND"|"OR"
 ;
 
 CompareExpression:
