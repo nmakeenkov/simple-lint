@@ -130,6 +130,31 @@ class LikeFunction(object):
         return pattern.search(expression[0]) is not None, None
 
 
+class LogicalFunction(object):
+    def __init__(self, is_and: bool, operands):
+        self.prevailing_value = False if is_and else True
+        if len(operands) != 2:
+            raise Exception("like expects 2 arguments, found " + str(len(operands)))
+        self.operands = operands
+
+    def __call__(self, *args, **kwargs):
+        lhs = self.operands[0](*args, **kwargs)
+        if lhs[1] is not None:
+            return None, lhs[1]
+        if not isinstance(lhs[0], bool):
+            raise Exception('Logical operation applied to ' + str(lhs[0]) + ", bool expected")
+        if lhs[0] == self.prevailing_value:
+            return lhs[0], None
+        rhs = self.operands[1](*args, **kwargs)
+        if rhs[1] is not None:
+            return None, rhs[1]
+        if not isinstance(rhs[0], bool):
+            raise Exception('Logical operation applied to ' + str(rhs[0]) + ", bool expected")
+        if rhs[0] == self.prevailing_value:
+            return rhs[0], None
+        return not self.prevailing_value, None
+
+
 class SubFunction(object):
     def __init__(self, operands):
         if len(operands) != 3:
@@ -250,6 +275,10 @@ class ValidateGenerator(AbstractVisitor):
     def visit_function_expression(self, function: Function, operands):
         if Function.LIKE.name == function.name:
             return LikeFunction(list(map(self.visit, operands)))
+        if Function.AND.name == function.name:
+            return LogicalFunction(is_and=True, operands=list(map(self.visit, operands)))
+        if Function.OR.name == function.name:
+            return LogicalFunction(is_and=False, operands=list(map(self.visit, operands)))
         if Function.SUB.name == function.name:
             return SubFunction(list(map(self.visit, operands)))
         if Function.LOWER.name == function.name:

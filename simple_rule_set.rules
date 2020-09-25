@@ -22,7 +22,11 @@ Rule "Names":
     FUNCTION:
         assert(LIKE(function.name, "^[a-z0-9_]*$"))  // snake_case
     NAME:
-        assert(LIKE(name.identifier, "^[a-z0-9_]*$"))  // snake_case
+        if OR(name.is_parent_file, AND(name.is_parent_class, name.parent_class.is_enum)):
+            assert(LIKE(name.identifier, "^[A-Z0-9_]*$"))  // UPPER_SNAKE_CASE
+        else:
+            assert(LIKE(name.identifier, "^[a-z0-9_]*$"))  // snake_case
+        ;
     CLASS:
         assert(LIKE(class.name, "^([A-Z][a-z0-9]+)+$"))  // CamelCase
 ;

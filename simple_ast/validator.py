@@ -10,7 +10,12 @@ def run_validate(validate: Validate, source_file_name: str):
     visitor = ValidateAstVisitor(validate, error_registry, os.path.split(source_file_name)[1])
     with open(source_file_name) as f:
         source = f.read()
-    visitor.visit(ast.parse(source))
+    parsed_source = ast.parse(source)
+    # add parent ref
+    for node in ast.walk(parsed_source):
+        for child in ast.iter_child_nodes(node):
+            child.parent = node
+    visitor.visit(parsed_source)
     return error_registry
 
 
@@ -59,7 +64,13 @@ class ValidateAstVisitor(ast.NodeVisitor):
 
     def visit_Name(self, node):
         if isinstance(node.ctx, ast.Store):
-            scope = Scope([Variable('name', {'identifier': node.id}),
+            parent = node.parent.parent if isinstance(node.parent, ast.Assign) else node.parent
+            name_props = {'identifier': node.id,
+                          'is_parent_class': isinstance(parent, ast.ClassDef),
+                          'is_parent_file': isinstance(parent, ast.Module)}
+            if name_props['is_parent_class']:
+                name_props['parent_class'] = self._create_class_variable(parent).data
+            scope = Scope([Variable('name', name_props),
                            Variable('_meta_inf', {'_description': 'Name ' + node.id,
                                                   '_file_name': self.file_name,
                                                   '_line_number': node.lineno})])
@@ -71,4 +82,7 @@ class ValidateAstVisitor(ast.NodeVisitor):
     @staticmethod
     def _create_class_variable(node):
         lines_count = node.end_lineno - node.lineno + 1
-        return Variable('class', {'lines': lines_count, 'name': node.name})
+        return Variable('class', {'lines': lines_count,
+                                  'name': node.name,
+                                  'is_enum': 'Enum' in
+                                             map(lambda x: x.id if isinstance(x, ast.Name) else None, node.bases)})
